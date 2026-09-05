@@ -2,69 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
-use App\Models\Enrollment;
 use Illuminate\Http\Request;
+use App\Models\Course; // تأكدي إن الموديل معموله استيراد
 
 class CourseController extends Controller
 {
-    // عرض جميع الكورسات
-    public function index()
-    {
-        $courses = Course::all();
-        return view('courses.index', compact('courses'));
-    }
-
-    // عرض صفحة إضافة كورس جديد
-    public function create()
-    {
-        return view('courses.create');
-    }
-
-    // حفظ كورس جديد
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-        ]);
-
-        Course::create($request->all());
-
-        return redirect()->route('courses.index')->with('success', 'تم إضافة الكورس بنجاح!');
-    }
-
-    // عرض صفحة إدخال بيانات الدفع والتسجيل للكورس
-    public function enrollForm($id)
+    // دالة عرض تفاصيل الكورس أو صفحة التسجيل
+    public function show($id)
     {
         $course = Course::findOrFail($id);
-        return view('courses.enroll', compact('course'));
+        return view('courses.show', compact('course'));
     }
 
-    // استقبال وتسجيل بيانات الدفع وحفظها في قاعدة البيانات
-    public function enrollSubmit(Request $request)
+    // الدالة الخاصة بمعالجة التسجيل اللي بتعمل الإيرور
+    public function enroll($id)
     {
-        $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'phone' => 'required|string',
-            'payment_method' => 'required|string',
-        ]);
+        $course = Course::findOrFail($id);
 
-        Enrollment::create([
-            'user_id' => auth()->id(),
-            'course_id' => $request->course_id,
-            'phone' => $request->phone,
-            'payment_method' => $request->payment_method,
-        ]);
+        // هنا بيكتب كود حفظ التسجيل في قاعدة البيانات (ح حسب جدول السجيل عندك)
+        // مثال بسيط:
+        // auth()->user()->courses()->attach($id);
 
-        return redirect()->route('my.courses')->with('success', 'تم الاشتراك في الكورس بنجاح!');
-    }
-
-    // عرض كورسات الطالب المشترك فيها فقط
-    public function myCourses()
-    {
-        $enrollments = Enrollment::where('user_id', auth()->id())->with('course')->get();
-        return view('courses.my-courses', compact('enrollments'));
+        return redirect()->back()->with('success', 'تم التسجيل في الكورس بنجاح!');
     }
 }

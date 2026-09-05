@@ -1,33 +1,29 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
 
-// الصفحة الرئيسية أو إعادة توجيه لصفحة تسجيل الدخول
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make sure to create something great!
+|
+*/
+
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('welcome');
 });
 
-// مسارات تسجيل الدخول
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+// مسارات الكورسات والتحكم فيها
+Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
+Route::get('/courses/{id}', [CourseController::class, 'show'])->name('courses.show');
 
-// مسارات إنشاء الحساب
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register.form');
-Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+// راوت استقبال طلب التسجيل في الكورس (المسؤول عن المشكلة)
+Route::post('/courses/{id}/enroll', [CourseController::class, 'enroll'])->name('enroll.submit');
 
-// تسجيل الخروج
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// مسارات الكورسات والمشروع (المحمية بميدل وير الـ Auth عشان محدش يدخل غير وهو عامل تسجيل دخول)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
-    Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create');
-    Route::post('/courses', [CourseController::class, 'store'])->name('courses.store');
-    
-    // مسارات التسجيل في الكورسات
-    Route::get('/courses/{id}/enroll', [CourseController::class, 'enrollForm'])->name('courses.enroll');
-    Route::post('/courses/enroll', [CourseController::class, 'enrollSubmit'])->name('courses.enroll.submit');
-    Route::get('/my-courses', [CourseController::class, 'myCourses'])->name('my.courses');
-});
+// مسارات المصادقة الافتراضية لو موجوده عندك
+require __DIR__.'/auth.php';
